@@ -84,7 +84,7 @@ artists_means = np.nanmean(dataset.replace(0, np.NaN), axis=0)
 quar_vals = np.arange(0.1, 1, 0.1)
 quartiles = np.quantile(artists_means, quar_vals)
 plt.plot(quar_vals, quartiles)
-plt.show()
+# plt.show()
 
 #
 train, test, concealed_idx = train_test_split(rating_np)
