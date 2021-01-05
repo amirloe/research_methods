@@ -1,13 +1,16 @@
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import mean_squared_error
 
-def knn_model(metric='cosine', n_neighbors=3):
-    model_knn = NearestNeighbors(metric=metric, n_neighbors=n_neighbors)
+
+class KnnModel():
+    def __init__(self, metric='cosine', n_neighbors=3):
+        self.model_knn = NearestNeighbors(metric=metric, n_neighbors=n_neighbors)
+
+    def run_model(self, dataSet):
+        self.model_knn.fit(dataSet)
+
+        get_recommendations(dataSet)
 
 
-def get_mse(pred, actual):
-    # Ignore nonzero terms.
-    pred = pred[actual.nonzero()].flatten()
-    actual = actual[actual.nonzero()].flatten()
-    return mean_squared_error(pred, actual)
-
+def get_recommendations(user_vector):
+    pass

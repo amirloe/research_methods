@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from explicitMF import ExplicitMF
-from KNN import knn_model
+from KNN import KnnModel
 from matplotlib import pyplot as plt
 
 np.random.seed(0)
@@ -83,7 +83,8 @@ quar_vals = np.arange(0.1, 1, 0.1)
 quartiles = np.quantile(artists_means, quar_vals)
 plt.plot(quar_vals, quartiles)
 plt.show()
-knn_model = knn_model()
+knn_model = KnnModel()
+knn_model.run_model(rating_np)
 
 # train, test = train_test_split(rating_np)
 # grid_search_mf(train, test)
