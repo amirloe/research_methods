@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from explicitMF import ExplicitMF
 from KNN import KnnModel
+from naive import Naive_model
 from matplotlib import pyplot as plt
 
 np.random.seed(0)
@@ -90,11 +91,19 @@ plt.savefig('AVG_rating_per_quartile')
 #
 train, test, concealed_idx = train_test_split(rating_np)
 # knn_model evaluation
+'''
 knn_model = KnnModel()
 precision,recall = knn_model.run_model(train, test, concealed_idx)
 print('Precision: ' + str(precision))
 print('Recall: ' + str(recall))
-# mf_mode = ExplicitMF(rating_np,concealed=concealed_idx,verbose=True)
-# mf_mode.calculate_learning_curve([1],test)
-# Matrix factorization
-# grid_search_mf(train, test)
+'''
+# matrix factorization evaluation
+'''
+mf_mode = ExplicitMF(rating_np,concealed=concealed_idx,verbose=True)
+mf_mode.calculate_learning_curve([1],test)
+Matrix factorization
+grid_search_mf(train, test)
+'''
+# naive model evaluation
+naive_model = Naive_model()
+naive_model.run_model(train, test, concealed_idx)
