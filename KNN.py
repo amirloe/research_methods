@@ -18,7 +18,7 @@ class KnnModel():
         self.train, self.test, self.concealed = train, test, concealed
         self.model_knn.fit(train)
         # number of neighbors is the number of recommending items
-        real_ratings = test[self.concealed]
+        real_ratings = np.array(test[self.concealed])
         distances, indices = self.model_knn.kneighbors(train)
         predicted_values = self._get_predictions(train, distances, indices)
         self._clf_analysis(real_ratings, predicted_values)
@@ -32,7 +32,7 @@ class KnnModel():
             print(f'ratings of user{indices[idx][1]} are:\n{train[indices[idx][1]].shape}')
             '''
             users_predictions.append(self._get_prediction(user_idx, np.reshape(distances[user_idx][1:], (5, 1)), sim_users_ratings))
-        return users_predictions
+        return np.array(users_predictions)
 
     def _get_prediction(self,user_idx, distances, ratings):
         # return predictions as n sized array of indices of items
@@ -47,8 +47,8 @@ class KnnModel():
         return self._best_not_rated(user_idx, predicted_ratings)
 
     def _best_not_rated(self, user_idx, predicted_ratings):
-        item_indices = predicted_ratings[self.concealed[user_idx]].argsort(axis=0)
-        item_indices = predicted_ratings[self.concealed[user_idx]].argsort()[::-1][self.topN]
+        idx_row = np.argsort(predicted_ratings[self.concealed[user_idx]], axis=0)
+        item_indices = idx_row[::-1][:self.topN]
         return item_indices
 
     def _clf_analysis(self, real, pred):
