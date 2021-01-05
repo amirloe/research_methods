@@ -16,6 +16,7 @@ class ExplicitMF():
                  n_factors=40,
                  item_reg=0.0,
                  user_reg=0.0,
+                 concealed=None,
                  verbose=False):
         """
         Train a matrix factorization model to predict empty
@@ -46,7 +47,21 @@ class ExplicitMF():
         self.n_factors = n_factors
         self.item_reg = item_reg
         self.user_reg = user_reg
+        self.concealed = concealed
         self._v = verbose
+
+    def get_precision_recall(self, predictions, test):
+        precision = 0
+        recall = 0
+        total_tp = 0
+        for user in range(self.user_vecs.shape[0]):
+            real_top = self.get_top_n(20, test, user)
+            pred_top = self.get_top_n(10, predictions, user)
+            tp = len(np.intersect1d(real_top, pred_top))
+            precision += len(pred_top)
+            recall += len(real_top)
+            total_tp += tp
+        return total_tp / precision , total_tp/recall
 
     def als_step(self,
                  latent_vectors,
@@ -142,6 +157,8 @@ class ExplicitMF():
         iter_array.sort()
         self.train_mse = []
         self.test_mse = []
+        self.percisions = []
+        self.recalls = []
         iter_diff = 0
         for (i, n_iter) in enumerate(iter_array):
             if self._v:
@@ -152,10 +169,21 @@ class ExplicitMF():
                 self.partial_train(n_iter - iter_diff)
 
             predictions = self.predict_all()
-
+            precision, recall = self.get_precision_recall(predictions, test)
+            self.percisions += [precision]
+            self.recalls += [recall]
             self.train_mse += [get_mse(predictions, self.ratings)]
             self.test_mse += [get_mse(predictions, test)]
             if self._v:
+                print('Precision: ' + str(self.percisions[-1]))
+                print('Recall: ' + str(self.recalls[-1]))
                 print('Train mse: ' + str(self.train_mse[-1]))
                 print('Test mse: ' + str(self.test_mse[-1]))
             iter_diff = n_iter
+
+    def get_top_n(self, n, prediction, user):
+        if user == 2:
+            print("User 2 -----")
+            print(prediction[user, self.concealed[user]])
+            print(prediction[user, self.concealed[user]].argsort()[::-1][:n])
+        return prediction[user, self.concealed[user]].argsort()[::-1][:n]
