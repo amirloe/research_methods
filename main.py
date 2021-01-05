@@ -28,6 +28,7 @@ def train_test_split(ratings):
         test_ratings = np.random.choice(ratings[user, :].nonzero()[0],
                                         size=50,
                                         replace=False)
+
         train[user, test_ratings] = 0.
         test[user, test_ratings] = ratings[user, test_ratings]
         concealed.append(test_ratings)
@@ -92,5 +93,7 @@ train, test, concealed_idx = train_test_split(rating_np)
 knn_model = KnnModel()
 knn_model.run_model(train, test, concealed_idx)
 
+# mf_mode = ExplicitMF(rating_np,concealed=concealed_idx,verbose=True)
+# mf_mode.calculate_learning_curve([1],test)
 # Matrix factorization
 # grid_search_mf(train, test)
