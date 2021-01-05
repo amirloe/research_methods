@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from explicitMF import ExplicitMF
+from KNN import knn_model
 from matplotlib import pyplot as plt
 
 np.random.seed(0)
@@ -37,7 +38,7 @@ def train_test_split(ratings):
 # Load data from disk
 def load_dataset():
     df = pd.read_csv('datamatrix.csv', index_col=0)
-    ratings = df.fillna(0).to_numpy()
+    ratings = df.fillna(0)
     return ratings
 
 
@@ -74,6 +75,15 @@ def grid_search_mf(train, test):
                 print(pd.Series(best_params))
 
 
-ratings = load_dataset()
-train, test = train_test_split(ratings)
-grid_search_mf(train, test)
+# rating is a data frame with zeros instead of none
+dataset = load_dataset()
+rating_np = dataset.to_numpy()
+artists_means = np.nanmean(dataset.replace(0, np.NaN), axis=0)
+quar_vals = np.arange(0.1, 1, 0.1)
+quartiles = np.quantile(artists_means, quar_vals)
+plt.plot(quar_vals, quartiles)
+plt.show()
+knn_model = knn_model()
+
+# train, test = train_test_split(rating_np)
+# grid_search_mf(train, test)
