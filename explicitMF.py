@@ -92,8 +92,8 @@ class ExplicitMF():
         ctr = 1
         while ctr <= n_iter:
             if ctr % 10 == 0 and self._v:
-                print
-                '\tcurrent iteration: {}'.format(ctr)
+                print(f'\tcurrent iteration: {ctr}')
+
             self.user_vecs = self.als_step(self.user_vecs,
                                            self.item_vecs,
                                            self.ratings,
@@ -145,8 +145,7 @@ class ExplicitMF():
         iter_diff = 0
         for (i, n_iter) in enumerate(iter_array):
             if self._v:
-                print
-                'Iteration: {}'.format(n_iter)
+                print(f'Iteration: {n_iter}')
             if i == 0:
                 self.train(n_iter - iter_diff)
             else:
@@ -157,8 +156,6 @@ class ExplicitMF():
             self.train_mse += [get_mse(predictions, self.ratings)]
             self.test_mse += [get_mse(predictions, test)]
             if self._v:
-                print
-                'Train mse: ' + str(self.train_mse[-1])
-                print
-                'Test mse: ' + str(self.test_mse[-1])
+                print('Train mse: ' + str(self.train_mse[-1]))
+                print('Test mse: ' + str(self.test_mse[-1]))
             iter_diff = n_iter
