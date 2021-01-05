@@ -6,7 +6,7 @@ class KnnModel():
     def __init__(self, metric='cosine', n_neighbors=3):
         self.model_knn = NearestNeighbors(metric=metric, n_neighbors=n_neighbors)
 
-    def run_model(self, dataSet):
+    def run_model(self, train, test, concealed):
         self.model_knn.fit(dataSet)
 
         get_recommendations(dataSet)

@@ -23,16 +23,18 @@ def plot_learning_curve(iter_array, model):
 def train_test_split(ratings):
     test = np.zeros(ratings.shape)
     train = ratings.copy()
+    concealed = []
     for user in range(ratings.shape[0]):
         test_ratings = np.random.choice(ratings[user, :].nonzero()[0],
                                         size=50,
                                         replace=False)
         train[user, test_ratings] = 0.
         test[user, test_ratings] = ratings[user, test_ratings]
-
+        concealed.append(test_ratings)
     # Test and training are truly disjoint
     assert (np.all((train * test) == 0))
-    return train, test
+    # remember concealed
+    return train, test, concealed
 
 
 # Load data from disk
@@ -83,8 +85,12 @@ quar_vals = np.arange(0.1, 1, 0.1)
 quartiles = np.quantile(artists_means, quar_vals)
 plt.plot(quar_vals, quartiles)
 plt.show()
-knn_model = KnnModel()
-knn_model.run_model(rating_np)
 
-# train, test = train_test_split(rating_np)
+#
+train, test, concealed_idx = train_test_split(rating_np)
+# knn_model evaluation
+knn_model = KnnModel()
+knn_model.run_model(train, test, concealed_idx)
+
+# Matrix factorization
 # grid_search_mf(train, test)
