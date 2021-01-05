@@ -34,7 +34,7 @@ def train_test_split(ratings):
     # Test and training are truly disjoint
     assert (np.all((train * test) == 0))
     # remember concealed
-    return train, test, concealed
+    return train, test, np.array(concealed)
 
 
 # Load data from disk
