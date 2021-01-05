@@ -18,10 +18,14 @@ class KnnModel():
         self.train, self.test, self.concealed = train, test, concealed
         self.model_knn.fit(train)
         # number of neighbors is the number of recommending items
-        real_ratings = np.array(test[self.concealed])
+        real_ratings = []
+        for user in range(self.num_of_users):
+            real_ratings.append(test[user,self.concealed[user]])
+        real_ratings = np.array(real_ratings)
         distances, indices = self.model_knn.kneighbors(train)
         predicted_values = self._get_predictions(train, distances, indices)
-        self._clf_analysis(real_ratings, predicted_values)
+        precision, recall = self._clf_analysis(real_ratings, predicted_values)
+        return precision, recall
 
     def _get_predictions(self, train, distances, indices):
         users_predictions = []
@@ -32,7 +36,8 @@ class KnnModel():
             print(f'ratings of user{indices[idx][1]} are:\n{train[indices[idx][1]].shape}')
             '''
             users_predictions.append(self._get_prediction(user_idx, np.reshape(distances[user_idx][1:], (5, 1)), sim_users_ratings))
-        return np.array(users_predictions)
+        print(np.shape(users_predictions))
+        return np.array(users_predictions).reshape((self.num_of_users,self.topN))
 
     def _get_prediction(self,user_idx, distances, ratings):
         # return predictions as n sized array of indices of items
@@ -52,4 +57,15 @@ class KnnModel():
         return item_indices
 
     def _clf_analysis(self, real, pred):
-        pass
+        precision = 0
+        recall = 0
+        total_tp = 0
+        for user in range(self.num_of_users):
+            real_top = real[user].argsort()[::-1][:self.topN*2]
+            pred_top = pred[user]
+            tp = len(np.intersect1d(real_top, pred_top))
+            precision += len(pred_top)
+            recall += len(real_top)
+            total_tp += tp
+        return total_tp / precision , total_tp/recall
+

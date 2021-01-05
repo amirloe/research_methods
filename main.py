@@ -85,14 +85,15 @@ artists_means = np.nanmean(dataset.replace(0, np.NaN), axis=0)
 quar_vals = np.arange(0.1, 1, 0.1)
 quartiles = np.quantile(artists_means, quar_vals)
 plt.plot(quar_vals, quartiles)
-# plt.show()
+plt.savefig('AVG_rating_per_quartile')
 
 #
 train, test, concealed_idx = train_test_split(rating_np)
 # knn_model evaluation
 knn_model = KnnModel()
-knn_model.run_model(train, test, concealed_idx)
-
+precision,recall = knn_model.run_model(train, test, concealed_idx)
+print('Precision: ' + str(precision))
+print('Recall: ' + str(recall))
 # mf_mode = ExplicitMF(rating_np,concealed=concealed_idx,verbose=True)
 # mf_mode.calculate_learning_curve([1],test)
 # Matrix factorization
