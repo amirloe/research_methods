@@ -106,4 +106,6 @@ grid_search_mf(train, test)
 '''
 # naive model evaluation
 naive_model = Naive_model()
-naive_model.run_model(train, test, concealed_idx)
+precision, recall = naive_model.run_model(train, test, concealed_idx)
+print('Precision: ' + str(precision))
+print('Recall: ' + str(recall))
