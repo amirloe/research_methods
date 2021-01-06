@@ -20,7 +20,7 @@ class KnnModel():
         # number of neighbors is the number of recommending items
         real_ratings = []
         for user in range(self.num_of_users):
-            real_ratings.append(test[user,self.concealed[user]])
+            real_ratings.append(test[user, self.concealed[user]])
         real_ratings = np.array(real_ratings)
         distances, indices = self.model_knn.kneighbors(train)
         predicted_values = self._get_predictions(train, distances, indices)
@@ -67,5 +67,5 @@ class KnnModel():
             precision += len(pred_top)
             recall += len(real_top)
             total_tp += tp
-        return total_tp / precision , total_tp/recall
+        return total_tp / precision, total_tp/recall
 

@@ -6,14 +6,21 @@ class Naive_model():
         self.train = -1
         self.test = -1
         self.concealed = -1
+        self.num_of_users = -1
+        self.num_of_artists = -1
         self.sorted_idx_by_rate = -1
         self.topN = topN
 
     def run_model(self, train, test, concealed):
+        self.num_of_users, self.num_of_artists = train.shape
         self.train, self.test, self.concealed = train, test, concealed
         self._get_sorted_avg()
+        real_ratings = []
+        for user in range(self.num_of_users):
+            real_ratings.append(test[user, self.concealed[user]])
         predictions = self._get_predictions()
-        # toDo: compare top N predictions for each user with real top 10 of him.
+        precision, recall = self._clf_analysis(real_ratings, predictions)
+        return precision, recall
 
     def _get_sorted_avg(self):
         artists_avg = np.mean(self.train, axis=0)
@@ -36,3 +43,16 @@ class Naive_model():
         positions = concealed_rating_idx.argsort()
         user_conscealed = user_conscealed[positions]
         return user_conscealed[:self.topN]
+
+    def _clf_analysis(self, real, pred):
+        precision = 0
+        recall = 0
+        total_tp = 0
+        for user in range(self.num_of_users):
+            real_top = real[user].argsort()[::-1][:self.topN * 2]
+            pred_top = pred[user]
+            tp = len(np.intersect1d(real_top, pred_top))
+            precision += len(pred_top)
+            recall += len(real_top)
+            total_tp += tp
+        return total_tp / precision, total_tp / recall
