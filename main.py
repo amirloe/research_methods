@@ -4,6 +4,7 @@ from explicitMF import ExplicitMF
 from KNN import KnnModel
 from naive import Naive_model
 from matplotlib import pyplot as plt
+from scipy.stats import ttest_ind
 
 np.random.seed(0)
 
@@ -46,7 +47,7 @@ def load_dataset():
     return ratings
 
 
-def grid_search_mf(train, test):
+def grid_search_mf(train, test,concealed_idx):
     latent_factors = [5, 10, 20, 40, 80]
     regularizations = [0.01, 0.1, 1., 10., 100.]
     regularizations.sort()
@@ -58,23 +59,26 @@ def grid_search_mf(train, test):
     best_params['n_iter'] = 0
     best_params['train_mse'] = np.inf
     best_params['test_mse'] = np.inf
+    best_params['precision'] = 0
     best_params['model'] = None
 
     for fact in latent_factors:
         print(f'Factors: {fact}')
         for reg in regularizations:
             print(f'Regularization: {reg}')
-            MF_ALS = ExplicitMF(train, n_factors=fact, user_reg=reg, item_reg=reg)
+            MF_ALS = ExplicitMF(train, n_factors=fact, user_reg=reg, item_reg=reg,concealed=concealed_idx)
             MF_ALS.calculate_learning_curve(iter_array, test)
             plot_learning_curve(iter_array, MF_ALS)
-            min_idx = np.argmin(MF_ALS.test_mse)
-            if MF_ALS.test_mse[min_idx] < best_params['test_mse']:
+            precisions_arr = [np.mean(x) for x in MF_ALS.percisions]
+            max_idx = np.argmax(precisions_arr)
+            if np.mean(MF_ALS.percisions[max_idx]) > best_params['precision']:
                 best_params['n_factors'] = fact
                 best_params['reg'] = reg
-                best_params['n_iter'] = iter_array[min_idx]
-                best_params['train_mse'] = MF_ALS.train_mse[min_idx]
-                best_params['test_mse'] = MF_ALS.test_mse[min_idx]
+                best_params['n_iter'] = iter_array[max_idx]
+                best_params['train_mse'] = MF_ALS.train_mse[max_idx]
+                best_params['test_mse'] = MF_ALS.test_mse[max_idx]
                 best_params['model'] = MF_ALS
+                best_params['precision'] = np.mean(MF_ALS.percisions[max_idx])
                 print('New optimal hyperparameters')
                 print(pd.Series(best_params))
 
@@ -97,19 +101,29 @@ precision,recall = knn_model.run_model(train, test, concealed_idx)
 print('Precision: ' + str(precision))
 print('Recall: ' + str(recall))
 '''
+# grid_search_mf(train, test,concealed_idx)
+print("=====KNN MODEL=====")
 knn_model = KnnModel()
-precision,recall = knn_model.run_model(train, test, concealed_idx)
-print('Precision: ' + str(precision))
-print('Recall: ' + str(recall))
+knn_precision,knn_recall = knn_model.run_model(train, test, concealed_idx)
+print('Precision: ' + str(np.mean(knn_precision)))
+print('Recall: ' + str(np.mean(knn_recall)))
 # matrix factorization evaluation
 '''
 Matrix factorization
 grid_search_mf(train, test)
 '''
-mf_mode = ExplicitMF(rating_np,concealed=concealed_idx,verbose=True)
+print("=====MF MODEL=====")
+mf_mode = ExplicitMF(train, n_factors=20, user_reg=100, item_reg=100,concealed=concealed_idx)
 mf_mode.calculate_learning_curve([50],test)
+mf_precision, mf_recall = mf_mode.get_percisions_recalls()
+print('Precision: ' + str(np.mean(mf_precision)))
+print('Recall: ' + str(np.mean(mf_recall)))
 # naive model evaluation
+print("=====Naive MODEL=====")
 naive_model = Naive_model()
-precision, recall = naive_model.run_model(train, test, concealed_idx)
-print('Precision: ' + str(precision))
-print('Recall: ' + str(recall))
+naive_precision, naive_recall = naive_model.run_model(train, test, concealed_idx)
+print('Precision: ' + str(np.mean(naive_precision)))
+print('Recall: ' + str(np.mean(naive_recall)))
+
+print(ttest_ind(knn_precision, mf_precision))
+print(ttest_ind(naive_precision, mf_precision))

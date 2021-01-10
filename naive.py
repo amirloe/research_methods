@@ -48,11 +48,15 @@ class Naive_model():
         precision = 0
         recall = 0
         total_tp = 0
+        precisions = []
+        recalls = []
         for user in range(self.num_of_users):
-            real_top = real[user].argsort()[::-1][:self.topN * 2]
+            real_top = real[user].argsort()[::-1][:self.topN*2]
             pred_top = pred[user]
             tp = len(np.intersect1d(real_top, pred_top))
             precision += len(pred_top)
             recall += len(real_top)
+            precisions.append(tp/len(pred_top))
+            recalls.append (tp/len(real_top))
             total_tp += tp
-        return total_tp / precision, total_tp / recall
+        return precisions, recalls

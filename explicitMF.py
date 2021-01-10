@@ -54,14 +54,15 @@ class ExplicitMF():
         precision = 0
         recall = 0
         total_tp = 0
+        precisions = []
+        recalls = []
         for user in range(self.user_vecs.shape[0]):
             real_top = self.get_top_n(20, test, user)
             pred_top = self.get_top_n(10, predictions, user)
             tp = len(np.intersect1d(real_top, pred_top))
-            precision += len(pred_top)
-            recall += len(real_top)
-            total_tp += tp
-        return total_tp / precision , total_tp/recall
+            precisions.append(tp / len(pred_top))
+            recalls.append(tp / len(real_top))
+        return precisions, recalls
 
     def als_step(self,
                  latent_vectors,
@@ -181,9 +182,12 @@ class ExplicitMF():
                 print('Test mse: ' + str(self.test_mse[-1]))
             iter_diff = n_iter
 
+    def get_percisions_recalls(self):
+        return self.percisions[-1], self.recalls[-1]
+
     def get_top_n(self, n, prediction, user):
-        if user == 2:
-            print("User 2 -----")
-            print(prediction[user, self.concealed[user]])
-            print(prediction[user, self.concealed[user]].argsort()[::-1][:n])
+        # if user == 2:
+        #     print("User 2 -----")
+        #     print(prediction[user, self.concealed[user]])
+        #     print(prediction[user, self.concealed[user]].argsort()[::-1][:n])
         return prediction[user, self.concealed[user]].argsort()[::-1][:n]

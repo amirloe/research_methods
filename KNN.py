@@ -36,7 +36,7 @@ class KnnModel():
             print(f'ratings of user{indices[idx][1]} are:\n{train[indices[idx][1]].shape}')
             '''
             users_predictions.append(self._get_prediction(user_idx, np.reshape(distances[user_idx][1:], (5, 1)), sim_users_ratings))
-        print(np.shape(users_predictions))
+        # print(np.shape(users_predictions))
         return np.array(users_predictions).reshape((self.num_of_users,self.topN))
 
     def _get_prediction(self,user_idx, distances, ratings):
@@ -60,12 +60,16 @@ class KnnModel():
         precision = 0
         recall = 0
         total_tp = 0
+        precisions = []
+        recalls = []
         for user in range(self.num_of_users):
             real_top = real[user].argsort()[::-1][:self.topN*2]
             pred_top = pred[user]
             tp = len(np.intersect1d(real_top, pred_top))
             precision += len(pred_top)
             recall += len(real_top)
+            precisions.append(tp/len(pred_top))
+            recalls.append (tp/len(real_top))
             total_tp += tp
-        return total_tp / precision, total_tp/recall
+        return precisions, recalls
 
