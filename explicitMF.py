@@ -17,7 +17,8 @@ class ExplicitMF():
                  item_reg=0.0,
                  user_reg=0.0,
                  concealed=None,
-                 verbose=False):
+                 verbose=False,
+                 topN=10):
         """
         Train a matrix factorization model to predict empty
         entries in a matrix. The terminology assumes a
@@ -49,6 +50,7 @@ class ExplicitMF():
         self.user_reg = user_reg
         self.concealed = concealed
         self._v = verbose
+        self.topN = topN
 
     def get_precision_recall(self, predictions, test):
         precision = 0
@@ -57,8 +59,8 @@ class ExplicitMF():
         precisions = []
         recalls = []
         for user in range(self.user_vecs.shape[0]):
-            real_top = self.get_top_n(20, test, user)
-            pred_top = self.get_top_n(10, predictions, user)
+            real_top = self.get_top_n(2*self.topN, test, user)
+            pred_top = self.get_top_n(self.topN, predictions, user)
             tp = len(np.intersect1d(real_top, pred_top))
             precisions.append(tp / len(pred_top))
             recalls.append(tp / len(real_top))
