@@ -12,6 +12,7 @@ class KnnModel():
         self.train = -1
         self.test = -1
         self.concealed = -1
+        self.n_neighbors = n_neighbors
 
     def run_model(self, train, test, concealed):
         self.num_of_users, self.num_of_artists = train.shape
@@ -23,6 +24,8 @@ class KnnModel():
             real_ratings.append(test[user, self.concealed[user]])
         real_ratings = np.array(real_ratings)
         distances, indices = self.model_knn.kneighbors(train)
+        distances = distances[:, 1:]
+        indices = indices[:, 1:]
         predicted_values = self._get_predictions(train, distances, indices)
         precision, recall = self._clf_analysis(real_ratings, predicted_values)
         return precision, recall
@@ -30,18 +33,18 @@ class KnnModel():
     def _get_predictions(self, train, distances, indices):
         users_predictions = []
         for user_idx in range(self.num_of_users):
-            sim_users_ratings = np.array([train[i] for i in indices[user_idx]][1:])
+            sim_users_ratings = np.array([train[i] for i in indices[user_idx]])
             '''
             print(f'this is the users indices {indices[idx]}')
             print(f'ratings of user{indices[idx][1]} are:\n{train[indices[idx][1]].shape}')
             '''
-            users_predictions.append(self._get_prediction(user_idx, np.reshape(distances[user_idx][1:], (5, 1)), sim_users_ratings))
+            users_predictions.append(self._get_prediction(user_idx, np.reshape(distances[user_idx], (self.n_neighbors, 1)), sim_users_ratings))
         # print(np.shape(users_predictions))
         return np.array(users_predictions).reshape((self.num_of_users,self.topN))
 
     def _get_prediction(self,user_idx, distances, ratings):
         # return predictions as n sized array of indices of items
-        weights = np.subtract(np.ones((5, 1)), distances)
+        weights = np.subtract(np.ones((self.n_neighbors, 1)), distances)
         total_weight = sum(weights)
         weights = weights / total_weight
         predicted_ratings = np.zeros((self.num_of_artists, 1))

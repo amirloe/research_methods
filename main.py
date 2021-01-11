@@ -83,6 +83,30 @@ def grid_search_mf(train, test,concealed_idx):
                 print('New optimal hyperparameters')
                 print(pd.Series(best_params))
 
+def grid_search_knn(train, test,concealed_idx):
+    number_neighbors = [1, 3, 5, 10, 25]
+    metrics = ['correlation', 'cosine']
+
+    best_params = {}
+    best_params['number_neighbors'] = number_neighbors[0]
+    best_params['metrics'] = metrics[0]
+    best_params['precision'] = 0
+
+    for neighbors in number_neighbors:
+        print(f'Neighbors: {neighbors}')
+        for metric in metrics:
+            print(f'Metric: {metric}')
+            knn_model = KnnModel(topN=30, n_neighbors=neighbors, metric=metric)
+            knn_precision, knn_recall = knn_model.run_model(train, test, concealed_idx)
+            precisions_arr = [np.mean(x) for x in knn_precision]
+            max_idx = np.argmax(precisions_arr)
+            if np.mean(precisions_arr[max_idx]) > best_params['precision']:
+                best_params['number_neighbors'] = neighbors
+                best_params['metrics'] = metric
+                best_params['precision'] = np.mean(precisions_arr[max_idx])
+                print('New optimal hyperparameters')
+                print(pd.Series(best_params))
+
 
 # rating is a data frame with zeros instead of none
 dataset = load_dataset()
@@ -104,14 +128,19 @@ print('Recall: ' + str(recall))
 '''
 # grid_search_mf(train, test,concealed_idx)
 print("=====KNN MODEL=====")
+grid_search_knn(train, test,concealed_idx)
+'''
 knn_model = KnnModel(topN=30)
 knn_precision,knn_recall = knn_model.run_model(train, test, concealed_idx)
 print('Precision: ' + str(np.mean(knn_precision)))
 print('Recall: ' + str(np.mean(knn_recall)))
 # matrix factorization evaluation
 '''
+'''
 Matrix factorization
 grid_search_mf(train, test)
+'''
+
 '''
 print("=====MF MODEL=====")
 mf_mode = ExplicitMF(train, n_factors=20, user_reg=100, item_reg=100,concealed=concealed_idx,topN=30)
@@ -131,3 +160,4 @@ print(wilcoxon(knn_precision,mf_precision))
 
 print(ttest_ind(naive_precision, mf_precision))
 print(wilcoxon(naive_precision,mf_precision))
+'''
