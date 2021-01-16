@@ -112,52 +112,52 @@ def grid_search_knn(train, test,concealed_idx):
 dataset = load_dataset()
 rating_np = dataset.to_numpy()
 artists_means = np.nanmean(dataset.replace(0, np.NaN), axis=0)
-quar_vals = np.arange(0.1, 1, 0.1)
+quar_vals = np.arange(0, 1, 0.1)
 quartiles = np.quantile(artists_means, quar_vals)
-plt.plot(quar_vals, quartiles)
+plt.plot(quar_vals,quartiles)
 plt.savefig('AVG_rating_per_quartile')
-
 #
+# #
 train, test, concealed_idx = train_test_split(rating_np)
-# knn_model evaluation
-'''
-knn_model = KnnModel()
-precision,recall = knn_model.run_model(train, test, concealed_idx)
-print('Precision: ' + str(precision))
-print('Recall: ' + str(recall))
-'''
-# grid_search_mf(train, test,concealed_idx)
-print("=====KNN MODEL=====")
-grid_search_knn(train, test,concealed_idx)
-'''
-knn_model = KnnModel(topN=30)
-knn_precision,knn_recall = knn_model.run_model(train, test, concealed_idx)
-print('Precision: ' + str(np.mean(knn_precision)))
-print('Recall: ' + str(np.mean(knn_recall)))
-# matrix factorization evaluation
-'''
-'''
-Matrix factorization
-grid_search_mf(train, test)
-'''
+# # knn_model evaluation
+# '''
+# knn_model = KnnModel()
+# precision,recall = knn_model.run_model(train, test, concealed_idx)
+# print('Precision: ' + str(precision))
+# print('Recall: ' + str(recall))
+# '''
+# # grid_search_mf(train, test,concealed_idx)
+for topN in [10,30,50]:
+    print("=====KNN MODEL=====")
+    # grid_search_knn(train, test,concealed_idx)
 
-'''
-print("=====MF MODEL=====")
-mf_mode = ExplicitMF(train, n_factors=20, user_reg=100, item_reg=100,concealed=concealed_idx,topN=30)
-mf_mode.calculate_learning_curve([50],test)
-mf_precision, mf_recall = mf_mode.get_percisions_recalls()
-print('Precision: ' + str(np.mean(mf_precision)))
-print('Recall: ' + str(np.mean(mf_recall)))
-# naive model evaluation
-print("=====Naive MODEL=====")
-naive_model = Naive_model(topN=30)
-naive_precision, naive_recall = naive_model.run_model(train, test, concealed_idx)
-print('Precision: ' + str(np.mean(naive_precision)))
-print('Recall: ' + str(np.mean(naive_recall)))
+    knn_model = KnnModel(topN=topN,n_neighbors=250)
+    knn_precision,knn_recall = knn_model.run_model(train, test, concealed_idx)
+    print('Precision: ' + str(np.mean(knn_precision)))
+    print('Recall: ' + str(np.mean(knn_recall)))
+    # matrix factorization evaluation
 
-print(ttest_ind(knn_precision, mf_precision))
-print(wilcoxon(knn_precision,mf_precision))
+    '''
+    Matrix factorization
+    grid_search_mf(train, test)
+    '''
 
-print(ttest_ind(naive_precision, mf_precision))
-print(wilcoxon(naive_precision,mf_precision))
-'''
+
+    print("=====MF MODEL=====")
+    mf_mode = ExplicitMF(train, n_factors=20, user_reg=100, item_reg=100,concealed=concealed_idx,topN=topN)
+    mf_mode.calculate_learning_curve([50],test)
+    mf_precision, mf_recall = mf_mode.get_percisions_recalls()
+    print('Precision: ' + str(np.mean(mf_precision)))
+    print('Recall: ' + str(np.mean(mf_recall)))
+    # naive model evaluation
+    print("=====Naive MODEL=====")
+    naive_model = Naive_model(topN=topN)
+    naive_precision, naive_recall = naive_model.run_model(train, test, concealed_idx)
+    print('Precision: ' + str(np.mean(naive_precision)))
+    print('Recall: ' + str(np.mean(naive_recall)))
+
+    print(ttest_ind(knn_precision, mf_precision))
+    print(wilcoxon(knn_precision,mf_precision))
+
+    print(ttest_ind(naive_precision, mf_precision))
+    print(wilcoxon(naive_precision,mf_precision))
