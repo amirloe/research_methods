@@ -107,6 +107,40 @@ def grid_search_knn(train, test,concealed_idx):
                 print('New optimal hyperparameters')
                 print(pd.Series(best_params))
 
+def plt_bars(data):
+    n_groups = 3
+    precision_naive = data[0]
+    precision_knn = data[1]
+    precision_mf = data[2]
+
+    # create plot
+    fig, ax = plt.subplots()
+    index = np.arange(n_groups)
+    bar_width = 0.2
+    opacity = 0.8
+
+    rects1 = plt.bar(index, precision_naive, bar_width,
+                     alpha=opacity,
+                     color='b',
+                     label='Naive')
+
+    rects2 = plt.bar(index + bar_width, precision_knn, bar_width,
+                     alpha=opacity,
+                     color='g',
+                     label='KNN')
+
+    rects2 = plt.bar(index + 2 * bar_width, precision_mf, bar_width,
+                     alpha=opacity,
+                     color='r',
+                     label='MF')
+
+    plt.ylabel('Precision@n')
+
+    plt.xticks(index + bar_width, ('n=10', 'n=30', 'n=50'))
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('precision_plt.png')
 
 # rating is a data frame with zeros instead of none
 dataset = load_dataset()
@@ -127,13 +161,16 @@ train, test, concealed_idx = train_test_split(rating_np)
 # print('Recall: ' + str(recall))
 # '''
 # # grid_search_mf(train, test,concealed_idx)
+results = [[],[],[]]
 for topN in [10,30,50]:
     print("=====KNN MODEL=====")
     # grid_search_knn(train, test,concealed_idx)
 
     knn_model = KnnModel(topN=topN,n_neighbors=250)
     knn_precision,knn_recall = knn_model.run_model(train, test, concealed_idx)
-    print('Precision: ' + str(np.mean(knn_precision)))
+    knn_mean_precision = np.mean(knn_precision)
+    results[1].append(knn_mean_precision)
+    print('Precision: ' + str(knn_mean_precision))
     print('Recall: ' + str(np.mean(knn_recall)))
     # matrix factorization evaluation
 
@@ -147,13 +184,19 @@ for topN in [10,30,50]:
     mf_mode = ExplicitMF(train, n_factors=20, user_reg=100, item_reg=100,concealed=concealed_idx,topN=topN)
     mf_mode.calculate_learning_curve([50],test)
     mf_precision, mf_recall = mf_mode.get_percisions_recalls()
-    print('Precision: ' + str(np.mean(mf_precision)))
+    mf_mean_precision = np.mean(mf_precision)
+    results[2].append(mf_mean_precision)
+    print('Precision: ' + str(mf_mean_precision))
     print('Recall: ' + str(np.mean(mf_recall)))
+
+
     # naive model evaluation
     print("=====Naive MODEL=====")
     naive_model = Naive_model(topN=topN)
     naive_precision, naive_recall = naive_model.run_model(train, test, concealed_idx)
-    print('Precision: ' + str(np.mean(naive_precision)))
+    naive_mean_precision = np.mean(naive_precision)
+    results[0].append(naive_mean_precision)
+    print('Precision: ' + str(naive_mean_precision))
     print('Recall: ' + str(np.mean(naive_recall)))
 
     print(ttest_ind(knn_precision, mf_precision))
@@ -161,3 +204,5 @@ for topN in [10,30,50]:
 
     print(ttest_ind(naive_precision, mf_precision))
     print(wilcoxon(naive_precision,mf_precision))
+
+plt_bars(results)
